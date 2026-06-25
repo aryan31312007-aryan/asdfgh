@@ -594,7 +594,6 @@ function sendProposalNotification(status) {
 
 // --- HIDDEN ADMIN PANEL LOGIC ---
 function setupAdminPanel() {
-    const adminTrigger = document.getElementById("admin-trigger");
     const welcomeBunny = document.getElementById("welcome-bunny-img-preview");
     const adminModal = document.getElementById("admin-modal");
     const closeAdmin = document.getElementById("close-admin-btn");
@@ -612,23 +611,6 @@ function setupAdminPanel() {
     }
 
     const isAdmin = localStorage.getItem('proposal_admin_mode') === 'true';
-
-    if (!isAdmin) {
-        if (adminTrigger) {
-            adminTrigger.style.display = "none";
-        }
-    } else {
-        if (adminTrigger) {
-            adminTrigger.style.display = "flex";
-        }
-    }
-
-    // Single-click bottom-right tiny cog trigger (restricted to admin session)
-    if (adminTrigger && adminModal && isAdmin) {
-        adminTrigger.addEventListener("click", () => {
-            adminModal.classList.add("active");
-        });
-    }
 
     // Hidden Combo 2: Click the Welcome bunny 5 times to open (restricted to admin session)
     if (welcomeBunny && adminModal && isAdmin) {
