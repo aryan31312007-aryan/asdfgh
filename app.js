@@ -760,7 +760,11 @@ function loadAdminInputs() {
     document.getElementById("color-primary").value = config.color_primary;
     document.getElementById("color-gradient-start").value = config.color_bg_start;
     document.getElementById("color-gradient-end").value = config.color_bg_end;
-    document.getElementById("audio-track-url").value = config.audio_url;
+    if (config.audio_url && config.audio_url.startsWith("data:")) {
+        document.getElementById("audio-track-url").value = "Local Uploaded Audio File (Base64)";
+    } else {
+        document.getElementById("audio-track-url").value = config.audio_url || "";
+    }
 
     // Lists manager items reload
     renderAdminCardsList();
@@ -967,6 +971,39 @@ function setupImageUploadReaders() {
     setupSingleImageUploader("welcome-img-upload", "p1_welcome_img");
     setupSingleImageUploader("congrats-img-upload", "congrats_img");
     setupSingleImageUploader("forever-img-upload", "forever_img");
+
+    // Audio file uploader
+    const audioFileInput = document.getElementById("audio-file-upload");
+    if (audioFileInput) {
+        audioFileInput.addEventListener("change", (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                if (file.size > 5 * 1024 * 1024) {
+                    alert("Warning: Large audio file detected. Base64 audio sync might be slow.");
+                }
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    config.audio_url = event.target.result;
+                    saveConfig();
+                    
+                    if (loveAudio) {
+                        loveAudio.src = config.audio_url;
+                        loveAudio.load();
+                        if (musicPlaying) {
+                            loveAudio.play().catch(er => console.log("Audio file playback fail: ", er));
+                        }
+                    }
+                    
+                    const trackInput = document.getElementById("audio-track-url");
+                    if (trackInput) {
+                        trackInput.value = "Local Uploaded Audio File (Base64)";
+                    }
+                    alert("Audio file uploaded and updated successfully!");
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    }
 }
 
 function setupSingleImageUploader(inputId, configKey) {
@@ -1152,11 +1189,13 @@ function saveStyleSettings() {
     config.color_bg_end = document.getElementById("color-gradient-end").value;
     
     const audioUrl = document.getElementById("audio-track-url").value.trim();
-    if (audioUrl && audioUrl !== config.audio_url) {
+    if (audioUrl && audioUrl !== "Local Uploaded Audio File (Base64)" && audioUrl !== config.audio_url) {
         config.audio_url = audioUrl;
-        loveAudio.src = audioUrl;
-        loveAudio.load();
-        if (musicPlaying) loveAudio.play().catch(e => console.log("Reload audio fail: ", e));
+        if (loveAudio) {
+            loveAudio.src = audioUrl;
+            loveAudio.load();
+            if (musicPlaying) loveAudio.play().catch(e => console.log("Reload audio fail: ", e));
+        }
     }
     
     saveConfig();
