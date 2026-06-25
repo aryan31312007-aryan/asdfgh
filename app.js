@@ -600,15 +600,38 @@ function setupAdminPanel() {
     const closeAdmin = document.getElementById("close-admin-btn");
     const resetAdmin = document.getElementById("reset-admin-btn");
 
-    // Single-click bottom-right tiny cog trigger (now click for robust mobile/desktop access)
-    if (adminTrigger && adminModal) {
+    // Owner protection: Hide the settings panel for the public.
+    // Admin mode is automatically enabled on local server, or by appending ?admin=true to the URL
+    const isLocal = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+    const urlParams = new URLSearchParams(window.location.search);
+    
+    if (urlParams.get('admin') === 'true' || isLocal) {
+        localStorage.setItem('proposal_admin_mode', 'true');
+    } else if (urlParams.get('admin') === 'false') {
+        localStorage.removeItem('proposal_admin_mode'); // Allow manual logout
+    }
+
+    const isAdmin = localStorage.getItem('proposal_admin_mode') === 'true';
+
+    if (!isAdmin) {
+        if (adminTrigger) {
+            adminTrigger.style.display = "none";
+        }
+    } else {
+        if (adminTrigger) {
+            adminTrigger.style.display = "flex";
+        }
+    }
+
+    // Single-click bottom-right tiny cog trigger (restricted to admin session)
+    if (adminTrigger && adminModal && isAdmin) {
         adminTrigger.addEventListener("click", () => {
             adminModal.classList.add("active");
         });
     }
 
-    // Hidden Combo 2: Click the Welcome bunny 5 times to open
-    if (welcomeBunny && adminModal) {
+    // Hidden Combo 2: Click the Welcome bunny 5 times to open (restricted to admin session)
+    if (welcomeBunny && adminModal && isAdmin) {
         let bunnyClickCount = 0;
         welcomeBunny.addEventListener("click", () => {
             if (currentPage === 1) {
