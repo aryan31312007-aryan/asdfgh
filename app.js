@@ -600,57 +600,36 @@ function setupAdminPanel() {
     const closeAdmin = document.getElementById("close-admin-btn");
     const resetAdmin = document.getElementById("reset-admin-btn");
 
-    // Owner protection: Hide the settings panel for the public.
-    // Admin mode is automatically enabled on local server, file:// protocol, or by appending ?admin=true
-    const isLocal = location.hostname === 'localhost' || 
-                    location.hostname === '127.0.0.1' || 
-                    location.hostname.startsWith('192.168.') || 
-                    location.hostname.startsWith('10.') || 
-                    location.hostname.startsWith('172.') || 
-                    location.port === '8080' || 
-                    location.port === '5500' ||
-                    location.protocol === 'file:';
-    const urlParams = new URLSearchParams(window.location.search);
-    
-    if (urlParams.get('admin') === 'true' || isLocal) {
-        localStorage.setItem('proposal_admin_mode', 'true');
-    } else if (urlParams.get('admin') === 'false') {
-        localStorage.removeItem('proposal_admin_mode'); // Allow manual logout
-    }
+    // Passcode gate protection for settings
+    const ADMIN_PASSCODE = "love";
 
-    const refreshAdminUI = () => {
-        const isAdmin = localStorage.getItem('proposal_admin_mode') === 'true';
-        if (adminTrigger) {
-            adminTrigger.style.display = isAdmin ? "flex" : "none";
-        }
-    };
-
-    // Initialize display state
-    refreshAdminUI();
-
-    // Single-click bottom-right tiny cog trigger
+    // Single-click bottom-right tiny cog trigger (always visible, password gated)
     if (adminTrigger && adminModal) {
+        adminTrigger.style.display = "flex";
         adminTrigger.addEventListener("click", () => {
-            const isAdmin = localStorage.getItem('proposal_admin_mode') === 'true';
-            if (isAdmin) {
+            const entered = prompt("Enter Admin Passcode to customize:");
+            if (entered === ADMIN_PASSCODE) {
                 adminModal.classList.add("active");
+            } else if (entered !== null) {
+                alert("Incorrect Passcode! 😌");
             }
         });
     }
 
-    // Hidden Combo 2: Click the Welcome bunny 5 times to activate admin mode and open panel
+    // Hidden Combo 2: Click the Welcome bunny 5 times (backdoor password gate)
     if (welcomeBunny && adminModal) {
         let bunnyClickCount = 0;
         welcomeBunny.addEventListener("click", () => {
             if (currentPage === 1) {
                 bunnyClickCount++;
                 if (bunnyClickCount >= 5) {
-                    // Activate admin mode
-                    localStorage.setItem('proposal_admin_mode', 'true');
-                    refreshAdminUI();
-                    adminModal.classList.add("active");
+                    const entered = prompt("Enter Admin Passcode to customize:");
+                    if (entered === ADMIN_PASSCODE) {
+                        adminModal.classList.add("active");
+                    } else if (entered !== null) {
+                        alert("Incorrect Passcode! 😌");
+                    }
                     bunnyClickCount = 0; // reset
-                    console.log("Admin mode activated via bunny click combo!");
                 }
             }
         });
