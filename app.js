@@ -125,27 +125,64 @@ document.addEventListener("DOMContentLoaded", () => {
     document.querySelector("#page-1").classList.add("active");
 });
 
-// --- LOAD / SAVE DATA FROM LOCAL STORAGE ---
+// --- LOAD / SAVE DATA FROM LOCAL STORAGE & SERVER ---
 function loadConfig() {
-    const saved = localStorage.getItem("fake_to_official_agreement_cfg");
-    if (saved) {
-        try {
-            config = JSON.parse(saved);
-            // Merge defaults for new keys if any
-            config = { ...DEFAULT_CONFIG, ...config };
-        } catch (e) {
-            console.error("Error parsing saved configuration", e);
-            config = { ...DEFAULT_CONFIG };
-        }
-    } else {
-        config = { ...DEFAULT_CONFIG };
-    }
+    // Attempt to load from server config.json
+    fetch('config.json')
+        .then(res => {
+            if (!res.ok) throw new Error("Server config.json load error");
+            return res.json();
+        })
+        .then(serverData => {
+            config = { ...DEFAULT_CONFIG, ...serverData };
+            localStorage.setItem("fake_to_official_agreement_cfg", JSON.stringify(config));
+            applyStyling();
+            renderPageContent();
+            console.log("Loaded configuration successfully from config.json!");
+        })
+        .catch(err => {
+            console.warn("Could not load config.json (expected in static hosting). Reading local storage:", err);
+            const saved = localStorage.getItem("fake_to_official_agreement_cfg");
+            if (saved) {
+                try {
+                    config = JSON.parse(saved);
+                    config = { ...DEFAULT_CONFIG, ...config };
+                } catch (e) {
+                    console.error("Error parsing saved configuration", e);
+                    config = { ...DEFAULT_CONFIG };
+                }
+            } else {
+                config = { ...DEFAULT_CONFIG };
+            }
+            applyStyling();
+            renderPageContent();
+        });
 }
 
 function saveConfig() {
     localStorage.setItem("fake_to_official_agreement_cfg", JSON.stringify(config));
     applyStyling();
     renderPageContent();
+
+    // If running on local dev server, sync configuration changes to config.json file on disk
+    if (location.hostname === 'localhost' || location.hostname === '127.0.0.1') {
+        fetch('/api/save-config', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(config)
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                console.log("Config synced to server config.json successfully.");
+            } else {
+                console.error("Failed to sync config to disk:", data.error);
+            }
+        })
+        .catch(err => {
+            console.error("Error syncing config to disk:", err);
+        });
+    }
 }
 
 function resetConfig() {
@@ -617,6 +654,70 @@ function setupAdminPanel() {
 
     // Setup Image Upload handlers to save as Base64 in config
     setupImageUploadReaders();
+
+    // Setup Git Push & Firebase Deploy button hooks
+    const gitPushBtn = document.getElementById("git-push-btn");
+    const firebaseDeployBtn = document.getElementById("firebase-deploy-btn");
+    const syncStatusMsg = document.getElementById("sync-status-msg");
+
+    if (gitPushBtn) {
+        gitPushBtn.addEventListener("click", () => {
+            showSyncStatus("Pushing changes to GitHub... Please wait.", "#ff758f");
+            gitPushBtn.disabled = true;
+            
+            fetch('/api/git-push', { method: 'POST' })
+                .then(res => res.json())
+                .then(data => {
+                    gitPushBtn.disabled = false;
+                    if (data.success) {
+                        showSyncStatus("Successfully pushed to GitHub! 🎉", "#06d6a0");
+                    } else {
+                        showSyncStatus("Failed to push. Check terminal console.", "#ff4d6d");
+                        console.error("Git Push details:", data);
+                    }
+                })
+                .catch(err => {
+                    gitPushBtn.disabled = false;
+                    showSyncStatus("Network error pushing to GitHub.", "#ff4d6d");
+                    console.error("Git Push error:", err);
+                });
+        });
+    }
+
+    if (firebaseDeployBtn) {
+        firebaseDeployBtn.addEventListener("click", () => {
+            showSyncStatus("Deploying to Firebase... Please wait.", "#ff758f");
+            firebaseDeployBtn.disabled = true;
+
+            fetch('/api/firebase-deploy', { method: 'POST' })
+                .then(res => res.json())
+                .then(data => {
+                    firebaseDeployBtn.disabled = false;
+                    if (data.success) {
+                        showSyncStatus("Successfully deployed live! 🚀", "#06d6a0");
+                    } else {
+                        showSyncStatus("Failed to deploy. Are you logged in? Check logs.", "#ff4d6d");
+                        console.error("Firebase Deploy details:", data);
+                    }
+                })
+                .catch(err => {
+                    firebaseDeployBtn.disabled = false;
+                    showSyncStatus("Network error deploying to Firebase.", "#ff4d6d");
+                    console.error("Firebase Deploy error:", err);
+                });
+        });
+    }
+
+    function showSyncStatus(msg, color) {
+        if (syncStatusMsg) {
+            syncStatusMsg.style.display = "block";
+            syncStatusMsg.innerText = msg;
+            syncStatusMsg.style.color = color;
+            setTimeout(() => {
+                syncStatusMsg.style.display = "none";
+            }, 8000);
+        }
+    }
 }
 
 function loadAdminInputs() {

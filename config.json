@@ -1,0 +1,62 @@
+{
+  "p1_title": "Fake To Official Agreement ❤️",
+  "p1_subtitle": "A journey from fake smiles to real love.",
+  "p1_welcome_img": "assets/images/bunny_welcome.png",
+  "p2_title": "Why I Like You ❤️",
+  "p2_subtitle": "You're not perfect, but you're perfect for me.",
+  "like_cards": [
+    { "id": 1, "icon": "❤️", "title": "Your Smile", "desc": "The way your smile brightens my darkest days." },
+    { "id": 2, "icon": "✨", "title": "Your Personality", "desc": "You are kind, caring and so beautiful inside out." },
+    { "id": 3, "icon": "🌸", "title": "The Way You Care", "desc": "You always understand me without me saying anything." },
+    { "id": 4, "icon": "🌟", "title": "The Way You Understand Me", "desc": "You are the most special person in my life." }
+  ],
+  "p3_title": "My Feelings For You ❤️",
+  "p3_letter": "Every moment with you feels like a dream come true. You are not just someone I love, you are someone I can't live without. You mean the world to me and my heart belongs to you.<br><br><em>You are my today and all of my tomorrows.</em><br><br>I promise to love you, care for you, respect you and always stand by you.",
+  "p4_title": "Memories With You ❤️",
+  "p4_subtitle": "Beautiful snapshots of our journey together.",
+  "memories": [
+    { "id": 1, "image": "", "title": "Our First Chat", "desc": "That random 'Hi' was the best 'Hi' of my life. ❤️" },
+    { "id": 2, "image": "", "title": "Our First Call", "desc": "I could talk to you for hours and still not get bored. ❤️" },
+    { "id": 3, "image": "", "title": "Our Funniest Moment", "desc": "The inside jokes that only you and I understand. 😂" },
+    { "id": 4, "image": "", "title": "The Day I Realized I Like You", "desc": "The exact moment when everything changed. 🥺❤️" }
+  ],
+  "p5_title": "Changes In My Life When You Came ❤️",
+  "changes": [
+    { "id": 1, "icon": "😊", "title": "You Made Me Smile More", "desc": "You made everything beautiful." },
+    { "id": 2, "icon": "💪", "title": "You Made Me Better", "desc": "You motivated and inspired me." },
+    { "id": 3, "icon": "💖", "title": "You Gave Me Happiness", "desc": "You are the reason for my happiness." },
+    { "id": 4, "icon": "🏡", "title": "You Became My Safe Place", "desc": "You are my peace." }
+  ],
+  "p6_title": "Promise & Future Plans With You ❤️",
+  "promises": [
+    "I will always respect you.",
+    "I will always support you.",
+    "I will always stay honest with you.",
+    "I will never stop choosing you.",
+    "I will never let you feel alone."
+  ],
+  "dreams": [
+    "Travel the world together.",
+    "Watch sunsets together.",
+    "Build beautiful memories.",
+    "Grow old together."
+  ],
+  "p7_question": "Will You Be My Official Real Girlfriend? ❤️",
+  "proposal_img": "assets/images/couple_silhouette_proposal.png",
+  "p8_title": "🎉 CONGRATULATIONS ❤️ 🎉",
+  "p8_subtitle": "Now Our Relationship Is Properly Official 😌❤️",
+  "congrats_img": "assets/images/bunny_couple_congrats.png",
+  "p8_final_message": "Aaj Se Tum Sirf Meri Favourite Person Nahi, Meri Official Girlfriend Bhi Ho ❤️🥺",
+  "p9_text1": "\"This Is Not Just A Website...<br>It's A Piece Of My Heart For You ❤️\"",
+  "p9_text2": "A New Chapter Begins...<br>You, Me & A Lifetime Of Us ❤️",
+  "forever_img": "assets/images/couple_together_forever.png",
+  "email_to": "",
+  "emailjs_public_key": "",
+  "emailjs_service_id": "",
+  "emailjs_template_id": "",
+  "color_primary": "#ff4d6d",
+  "color_bg_start": "#ffe5ec",
+  "color_bg_end": "#ffb5a7",
+  "audio_url": "https://assets.mixkit.co/music/preview/mixkit-love-grows-1111.mp3",
+  "audio_success_url": "https://assets.mixkit.co/music/preview/mixkit-dreaming-big-1112.mp3"
+}
