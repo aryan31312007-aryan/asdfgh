@@ -601,14 +601,15 @@ function setupAdminPanel() {
     const resetAdmin = document.getElementById("reset-admin-btn");
 
     // Owner protection: Hide the settings panel for the public.
-    // Admin mode is automatically enabled on local server, or by appending ?admin=true to the URL
+    // Admin mode is automatically enabled on local server, file:// protocol, or by appending ?admin=true
     const isLocal = location.hostname === 'localhost' || 
                     location.hostname === '127.0.0.1' || 
                     location.hostname.startsWith('192.168.') || 
                     location.hostname.startsWith('10.') || 
                     location.hostname.startsWith('172.') || 
                     location.port === '8080' || 
-                    location.port === '5500';
+                    location.port === '5500' ||
+                    location.protocol === 'file:';
     const urlParams = new URLSearchParams(window.location.search);
     
     if (urlParams.get('admin') === 'true' || isLocal) {
@@ -617,34 +618,39 @@ function setupAdminPanel() {
         localStorage.removeItem('proposal_admin_mode'); // Allow manual logout
     }
 
-    const isAdmin = localStorage.getItem('proposal_admin_mode') === 'true';
-
-    if (!isAdmin) {
+    const refreshAdminUI = () => {
+        const isAdmin = localStorage.getItem('proposal_admin_mode') === 'true';
         if (adminTrigger) {
-            adminTrigger.style.display = "none";
+            adminTrigger.style.display = isAdmin ? "flex" : "none";
         }
-    } else {
-        if (adminTrigger) {
-            adminTrigger.style.display = "flex";
-        }
-    }
+    };
 
-    // Single-click bottom-right tiny cog trigger (restricted to admin session)
-    if (adminTrigger && adminModal && isAdmin) {
+    // Initialize display state
+    refreshAdminUI();
+
+    // Single-click bottom-right tiny cog trigger
+    if (adminTrigger && adminModal) {
         adminTrigger.addEventListener("click", () => {
-            adminModal.classList.add("active");
+            const isAdmin = localStorage.getItem('proposal_admin_mode') === 'true';
+            if (isAdmin) {
+                adminModal.classList.add("active");
+            }
         });
     }
 
-    // Hidden Combo 2: Click the Welcome bunny 5 times to open (restricted to admin session)
-    if (welcomeBunny && adminModal && isAdmin) {
+    // Hidden Combo 2: Click the Welcome bunny 5 times to activate admin mode and open panel
+    if (welcomeBunny && adminModal) {
         let bunnyClickCount = 0;
         welcomeBunny.addEventListener("click", () => {
             if (currentPage === 1) {
                 bunnyClickCount++;
                 if (bunnyClickCount >= 5) {
+                    // Activate admin mode
+                    localStorage.setItem('proposal_admin_mode', 'true');
+                    refreshAdminUI();
                     adminModal.classList.add("active");
                     bunnyClickCount = 0; // reset
+                    console.log("Admin mode activated via bunny click combo!");
                 }
             }
         });
