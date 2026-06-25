@@ -111,24 +111,25 @@ const noButtonTexts = [
 
 // --- INITIALIZATION ---
 document.addEventListener("DOMContentLoaded", () => {
-    loadConfig();
-    applyStyling();
-    initAudio();
-    renderPageContent();
-    setupCanvas();
-    setupNavigation();
-    setupProposalActions();
-    setupAdminPanel();
-    setupScrollAnimations();
-    
-    // Welcome Screen load animation trigger
-    document.querySelector("#page-1").classList.add("active");
+    loadConfig().then(() => {
+        applyStyling();
+        initAudio();
+        renderPageContent();
+        setupCanvas();
+        setupNavigation();
+        setupProposalActions();
+        setupAdminPanel();
+        setupScrollAnimations();
+        
+        // Welcome Screen load animation trigger
+        document.querySelector("#page-1").classList.add("active");
+    });
 });
 
 // --- LOAD / SAVE DATA FROM LOCAL STORAGE & SERVER ---
 function loadConfig() {
     // Attempt to load from server config.json
-    fetch('config.json')
+    return fetch('config.json')
         .then(res => {
             if (!res.ok) throw new Error("Server config.json load error");
             return res.json();
@@ -136,8 +137,6 @@ function loadConfig() {
         .then(serverData => {
             config = { ...DEFAULT_CONFIG, ...serverData };
             localStorage.setItem("fake_to_official_agreement_cfg", JSON.stringify(config));
-            applyStyling();
-            renderPageContent();
             console.log("Loaded configuration successfully from config.json!");
         })
         .catch(err => {
@@ -154,8 +153,6 @@ function loadConfig() {
             } else {
                 config = { ...DEFAULT_CONFIG };
             }
-            applyStyling();
-            renderPageContent();
         });
 }
 
