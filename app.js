@@ -602,7 +602,13 @@ function setupAdminPanel() {
 
     // Owner protection: Hide the settings panel for the public.
     // Admin mode is automatically enabled on local server, or by appending ?admin=true to the URL
-    const isLocal = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+    const isLocal = location.hostname === 'localhost' || 
+                    location.hostname === '127.0.0.1' || 
+                    location.hostname.startsWith('192.168.') || 
+                    location.hostname.startsWith('10.') || 
+                    location.hostname.startsWith('172.') || 
+                    location.port === '8080' || 
+                    location.port === '5500';
     const urlParams = new URLSearchParams(window.location.search);
     
     if (urlParams.get('admin') === 'true' || isLocal) {
