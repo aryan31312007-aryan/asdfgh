@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fake to Official Agreement ❤️</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600;700&family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,400&display=swap" rel="stylesheet">
+    <!-- EmailJS SDK -->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+    <!-- Stylesheet -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Background Elements -->
+    <canvas id="particle-canvas"></canvas>
+    <div class="vignette-overlay"></div>
+    <div class="sparkles-container" id="sparkles-container"></div>
+
+    <!-- Music Player Toggle -->
+    <button class="music-toggle" id="music-btn" aria-label="Toggle Music">
+        <svg class="music-icon active" viewBox="0 0 24 24" id="music-icon-svg">
+            <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
+        </svg>
+        <span class="music-waves" id="music-waves">
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+        </span>
+    </button>
+
+    <!-- Admin Floating Trigger (Hidden or double click in corner) -->
+    <button class="admin-trigger-btn" id="admin-trigger" title="Settings (Double Click)">
+        ⚙️
+    </button>
+
+    <!-- MAIN APP CONTAINER -->
+    <main class="app-container" id="app-container">
+
+        <!-- PAGE 1: WELCOME SCREEN -->
+        <section class="page active" id="page-1">
+            <div class="glass-card welcome-card animate-fade-in">
+                <div class="welcome-image-container">
+                    <img src="assets/images/bunny_welcome.png" alt="Cute bunny with heart" class="welcome-bunny-img" id="welcome-bunny-img-preview">
+                </div>
+                <h1 class="glow-text text-center" id="p1-title">Fake To Official Agreement ❤️</h1>
+                <p class="subtitle text-center" id="p1-subtitle">A journey from fake smiles to real love.</p>
+                <div class="button-wrapper">
+                    <button class="btn btn-primary btn-heart" id="start-btn">
+                        <span>Start</span>
+                        <span class="heart-pulse">❤️</span>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- PAGE 2: WHY I LIKE YOU -->
+        <section class="page" id="page-2">
+            <div class="glass-card container-card">
+                <div class="card-header">
+                    <h2 class="section-title glow-text" id="p2-title">Why I Like You ❤️</h2>
+                    <p class="section-subtitle" id="p2-subtitle">You're not perfect, but you're perfect for me.</p>
+                </div>
+                
+                <div class="cards-grid" id="like-cards-container">
+                    <!-- Cards will be populated dynamically -->
+                </div>
+
+                <div class="page-footer">
+                    <button class="btn btn-primary" id="p2-next">
+                        <span>My Feelings For You ❤️</span>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- PAGE 3: MY FEELINGS FOR YOU -->
+        <section class="page" id="page-3">
+            <div class="glass-card container-card">
+                <div class="card-header">
+                    <h2 class="section-title glow-text" id="p3-title">My Feelings For You ❤️</h2>
+                </div>
+                
+                <div class="love-letter-wrapper">
+                    <div class="love-letter-decor top-left">🌸</div>
+                    <div class="love-letter-decor bottom-right">🌸</div>
+                    <div class="love-letter-content handwriting-font" id="p3-letter-content">
+                        Every moment with you feels like a dream come true. You are not just someone I love, you are someone I can't live without. You mean the world to me and my heart belongs to you.
+                        <br><br>
+                        <em>You are my today and all of my tomorrows.</em>
+                        <br><br>
+                        I promise to love you, care for you, respect you and always stand by you.
+                    </div>
+                    <div class="letter-hearts">❤️❤️❤️</div>
+                </div>
+
+                <div class="page-footer">
+                    <button class="btn btn-primary" id="p3-next">
+                        <span>Memories With You ❤️</span>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- PAGE 4: MEMORIES WITH YOU -->
+        <section class="page" id="page-4">
+            <div class="glass-card container-card">
+                <div class="card-header">
+                    <h2 class="section-title glow-text" id="p4-title">Memories With You ❤️</h2>
+                    <p class="section-subtitle" id="p4-subtitle">Beautiful snapshots of our journey together.</p>
+                </div>
+
+                <div class="timeline-container" id="memories-timeline">
+                    <!-- Timeline items dynamically generated -->
+                </div>
+
+                <div class="page-footer">
+                    <button class="btn btn-primary" id="p4-next">
+                        <span>Changes In My Life ❤️</span>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- PAGE 5: CHANGES IN MY LIFE -->
+        <section class="page" id="page-5">
+            <div class="glass-card container-card">
+                <div class="card-header">
+                    <h2 class="section-title glow-text" id="p5-title">Changes In My Life When You Came ❤️</h2>
+                </div>
+
+                <div class="vertical-timeline" id="changes-timeline">
+                    <!-- Dynamic timeline elements -->
+                </div>
+
+                <div class="page-footer">
+                    <button class="btn btn-primary" id="p5-next">
+                        <span>Promise & Future Plans ❤️</span>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- PAGE 6: PROMISES & FUTURE PLANS -->
+        <section class="page" id="page-6">
+            <div class="glass-card container-card">
+                <div class="card-header">
+                    <h2 class="section-title glow-text" id="p6-title">Promise & Future Plans With You ❤️</h2>
+                </div>
+
+                <div class="promises-dreams-split">
+                    <div class="split-col">
+                        <h3 class="col-title glow-text-sub">My Promises To You</h3>
+                        <ul class="romantic-list" id="promises-list">
+                            <!-- Dynamic Promises -->
+                        </ul>
+                    </div>
+                    <div class="split-col">
+                        <h3 class="col-title glow-text-sub">Our Future Plans</h3>
+                        <ul class="romantic-list" id="dreams-list">
+                            <!-- Dynamic Future Plans -->
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="scroll-helper">
+                    <p class="scroll-helper-text">Scroll Down For Something Special ❤️</p>
+                    <div class="arrow-down">↓</div>
+                </div>
+
+                <div class="page-footer">
+                    <button class="btn btn-primary" id="p6-next">
+                        <span>Next ❤️</span>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- PAGE 7: FINAL PROPOSAL PAGE -->
+        <section class="page" id="page-7">
+            <div class="glass-card proposal-card animate-proposal">
+                <div class="proposal-bg-effects">
+                    <div class="candles-lit">🕯️🕯️🕯️</div>
+                </div>
+                
+                <div class="proposal-image-container">
+                    <img src="assets/images/couple_silhouette_proposal.png" alt="Couple Silhouette under Stars" class="proposal-img" id="proposal-img-preview">
+                </div>
+
+                <h1 class="proposal-question glow-text-red text-center" id="p7-question">Will You Be My Official Real Girlfriend? ❤️</h1>
+                
+                <div class="proposal-actions">
+                    <button class="btn btn-yes" id="yes-btn">YES ❤️</button>
+                    <button class="btn btn-no" id="no-btn">NO 🙈</button>
+                </div>
+
+                <div class="no-click-counter-badge" id="no-click-badge" style="display: none;">
+                    No Click Count: <span id="no-click-count">0</span>
+                    <div class="no-response-hint" id="no-response-hint">Maybe Not 🙊</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- PAGE 8: CONGRATULATIONS PAGE -->
+        <section class="page" id="page-8">
+            <div class="glass-card welcome-card text-center congrats-card">
+                <h1 class="glow-text text-xl animate-bounce-gentle" id="p8-title">🎉 CONGRATULATIONS ❤️ 🎉</h1>
+                <p class="subtitle text-center margin-b-md" id="p8-subtitle">Now Our Relationship Is Properly Official 😌❤️</p>
+
+                <div class="congrats-image-container">
+                    <img src="assets/images/bunny_couple_congrats.png" alt="Bunnies Celebrating" class="congrats-bunny-img" id="congrats-bunny-img-preview">
+                </div>
+
+                <div class="final-love-letter glass-subcard margin-y-md">
+                    <p class="handwriting-font" id="p8-final-message">
+                        From this day forward, you are not just my favorite person, but my partner, my teammate, and my home. I promise to keep making you smile every single day. 🥺❤️
+                    </p>
+                </div>
+
+                <div class="button-wrapper">
+                    <button class="btn btn-primary" id="p8-next">
+                        <span>Forever Together ❤️</span>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- PAGE 9: FOREVER TOGETHER -->
+        <section class="page" id="page-9">
+            <div class="glass-card welcome-card text-center forever-card">
+                <div class="forever-image-container">
+                    <img src="assets/images/couple_together_forever.png" alt="Couple Sitting under tree" class="forever-img" id="forever-img-preview">
+                </div>
+
+                <div class="forever-texts">
+                    <h2 class="forever-fade-in-text font-serif italic text-lg" id="p9-text-1">"This Is Not Just A Website...<br>It's A Piece Of My Heart For You ❤️"</h2>
+                    <h2 class="forever-fade-in-text font-serif text-xl margin-t-md font-bold" id="p9-text-2">A New Chapter Begins...<br>You, Me & A Lifetime Of Us ❤️</h2>
+                </div>
+
+                <div class="button-wrapper margin-t-lg">
+                    <button class="btn btn-primary btn-gold btn-infinite-heart" id="p9-final-btn">
+                        <span>I Love You Forever ❤️</span>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- HIDDEN ROMANTIC POPUP (YES BUTTON CLICKED) -->
+    <div class="proposal-popup-overlay" id="proposal-popup">
+        <div class="glass-card popup-card text-center">
+            <div class="popup-heart">❤️</div>
+            <p class="popup-message handwriting-font" id="proposal-popup-msg">
+                "Aaj Se Tum Sirf Meri Favourite Person Nahi, <br>
+                Meri Official Girlfriend Bhi Ho ❤️🥺"
+            </p>
+            <button class="btn btn-primary" id="popup-close-btn">Yayyy! Continue ❤️</button>
+        </div>
+    </div>
+
+    <!-- HIDDEN ADMIN DASHBOARD MODAL -->
+    <div class="admin-modal-overlay" id="admin-modal">
+        <div class="admin-dashboard-container">
+            
+            <!-- Admin Sidebar -->
+            <aside class="admin-sidebar">
+                <div class="admin-logo">
+                    <span>💖 Admin Panel</span>
+                    <small>Customize Her Journey</small>
+                </div>
+                <nav class="admin-nav">
+                    <button class="admin-nav-item active" data-tab="tab-texts">📝 Edit Texts</button>
+                    <button class="admin-nav-item" data-tab="tab-cards">💌 Why I Like You</button>
+                    <button class="admin-nav-item" data-tab="tab-memories">📸 Memories Timeline</button>
+                    <button class="admin-nav-item" data-tab="tab-timeline">⏳ Changes In Life</button>
+                    <button class="admin-nav-item" data-tab="tab-promises">🤝 Promises & Plans</button>
+                    <button class="admin-nav-item" data-tab="tab-proposal">💍 Proposal settings</button>
+                    <button class="admin-nav-item" data-tab="tab-email">✉️ Email Settings</button>
+                    <button class="admin-nav-item" data-tab="tab-style">🎨 Theme & Colors</button>
+                </nav>
+                <div class="admin-sidebar-footer">
+                    <button class="btn btn-danger btn-sm" id="reset-admin-btn">Reset All Settings</button>
+                    <button class="btn btn-secondary btn-sm margin-t-xs" id="close-admin-btn">Close Panel</button>
+                </div>
+            </aside>
+
+            <!-- Admin Content Area -->
+            <main class="admin-main-content">
+                
+                <!-- Tab: Edit Texts -->
+                <section class="admin-tab-content active" id="tab-texts">
+                    <h3 class="admin-section-header">Page Text Editor</h3>
+                    <p class="admin-section-desc">Quickly customize static text across the screens.</p>
+                    
+                    <div class="admin-form-group">
+                        <label for="admin-select-page">Select Page Screen:</label>
+                        <select id="admin-select-page" class="admin-input">
+                            <option value="p1">Page 1: Welcome Screen</option>
+                            <option value="p3">Page 3: Feelings Letter</option>
+                            <option value="p8">Page 8: Congrats Message</option>
+                            <option value="p9">Page 9: Forever Together Message</option>
+                        </select>
+                    </div>
+
+                    <!-- Dynamic form fields depending on selected page -->
+                    <div id="dynamic-text-fields">
+                        <!-- Fields populated via JS -->
+                    </div>
+
+                    <button class="btn btn-primary margin-t-md" id="save-texts-btn">Save Text Changes</button>
+                </section>
+
+                <!-- Tab: Why I Like You Cards -->
+                <section class="admin-tab-content" id="tab-cards">
+                    <h3 class="admin-section-header">"Why I Like You" Cards Editor</h3>
+                    <p class="admin-section-desc">Add, edit, rearrange, or delete romantic cards on Page 2.</p>
+                    
+                    <div class="admin-card-manager">
+                        <div class="admin-form-row">
+                            <div class="admin-form-group col-half">
+                                <label for="card-title-input">Card Title:</label>
+                                <input type="text" id="card-title-input" class="admin-input" placeholder="e.g. Your Smile">
+                            </div>
+                            <div class="admin-form-group col-half">
+                                <label for="card-desc-input">Card Description:</label>
+                                <input type="text" id="card-desc-input" class="admin-input" placeholder="e.g. Brightens my darkest days.">
+                            </div>
+                        </div>
+                        <div class="admin-form-row">
+                            <div class="admin-form-group col-half">
+                                <label for="card-icon-input">Card Emoji/Icon:</label>
+                                <input type="text" id="card-icon-input" class="admin-input" placeholder="e.g. ❤️, 😊, ✨">
+                            </div>
+                            <div class="admin-form-group col-half flex-align-end">
+                                <button class="btn btn-primary w-100" id="add-card-btn">Add New Card</button>
+                            </div>
+                        </div>
+
+                        <hr class="admin-divider">
+                        
+                        <h4>Current Cards List</h4>
+                        <div class="admin-sortable-list" id="admin-cards-list">
+                            <!-- Populated dynamically with drag controls or move up/down buttons -->
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Tab: Memories Timeline -->
+                <section class="admin-tab-content" id="tab-memories">
+                    <h3 class="admin-section-header">"Memories With You" Timeline Editor</h3>
+                    <p class="admin-section-desc">Manage memory milestones. Photos will be saved as Base64 in Local Storage.</p>
+                    
+                    <div class="admin-memory-manager">
+                        <div class="admin-form-row">
+                            <div class="admin-form-group col-half">
+                                <label for="memory-title-input">Memory Title:</label>
+                                <input type="text" id="memory-title-input" class="admin-input" placeholder="Our First Chat">
+                            </div>
+                            <div class="admin-form-group col-half">
+                                <label for="memory-desc-input">Description / Custom Note:</label>
+                                <textarea id="memory-desc-input" class="admin-input" rows="2" placeholder="That random 'Hi' was the best 'Hi' of my life."></textarea>
+                            </div>
+                        </div>
+                        <div class="admin-form-row">
+                            <div class="admin-form-group col-half">
+                                <label for="memory-image-input">Upload Photo (Max 500KB recommended):</label>
+                                <input type="file" id="memory-image-input" class="admin-input" accept="image/*">
+                            </div>
+                            <div class="admin-form-group col-half flex-align-end">
+                                <button class="btn btn-primary w-100" id="add-memory-btn">Add New Memory</button>
+                            </div>
+                        </div>
+
+                        <hr class="admin-divider">
+
+                        <h4>Current Timeline Items</h4>
+                        <div class="admin-sortable-list" id="admin-memories-list">
+                            <!-- Dynamic memory list -->
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Tab: Changes In Life -->
+                <section class="admin-tab-content" id="tab-timeline">
+                    <h3 class="admin-section-header">"Changes In My Life" Timeline Editor</h3>
+                    <p class="admin-section-desc">Customize the vertical life change timeline items on Page 5.</p>
+
+                    <div class="admin-changes-manager">
+                        <div class="admin-form-row">
+                            <div class="admin-form-group col-half">
+                                <label for="change-title-input">Change Heading:</label>
+                                <input type="text" id="change-title-input" class="admin-input" placeholder="You Made Me Smile More">
+                            </div>
+                            <div class="admin-form-group col-half">
+                                <label for="change-desc-input">Supporting Detail:</label>
+                                <input type="text" id="change-desc-input" class="admin-input" placeholder="Even on rough days, your messages make me grin.">
+                            </div>
+                        </div>
+                        <div class="admin-form-row">
+                            <div class="admin-form-group col-half">
+                                <label for="change-emoji-input">Emoji Icon:</label>
+                                <input type="text" id="change-emoji-input" class="admin-input" placeholder="e.g. 😊, 💫, 💖">
+                            </div>
+                            <div class="admin-form-group col-half flex-align-end">
+                                <button class="btn btn-primary w-100" id="add-change-btn">Add Timeline Item</button>
+                            </div>
+                        </div>
+
+                        <hr class="admin-divider">
+
+                        <h4>Current Life Changes</h4>
+                        <div class="admin-sortable-list" id="admin-changes-list">
+                            <!-- Dynamic items list -->
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Tab: Promises & Future Plans -->
+                <section class="admin-tab-content" id="tab-promises">
+                    <h3 class="admin-section-header">Promises & Future Plans Editor</h3>
+                    <p class="admin-section-desc">Manage lists displayed on Page 6.</p>
+
+                    <div class="admin-promises-split">
+                        <div class="admin-split-box">
+                            <h4>Promises</h4>
+                            <div class="admin-form-group">
+                                <input type="text" id="promise-input" class="admin-input" placeholder="I will always respect you.">
+                                <button class="btn btn-secondary btn-sm margin-t-xs" id="add-promise-btn">Add Promise</button>
+                            </div>
+                            <div class="admin-simple-list" id="admin-promises-list">
+                                <!-- Dynamic List -->
+                            </div>
+                        </div>
+
+                        <div class="admin-split-box">
+                            <h4>Future Dream Plans</h4>
+                            <div class="admin-form-group">
+                                <input type="text" id="dream-input" class="admin-input" placeholder="Travel to Switzerland together.">
+                                <button class="btn btn-secondary btn-sm margin-t-xs" id="add-dream-btn">Add Dream Plan</button>
+                            </div>
+                            <div class="admin-simple-list" id="admin-dreams-list">
+                                <!-- Dynamic List -->
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Tab: Proposal Settings -->
+                <section class="admin-tab-content" id="tab-proposal">
+                    <h3 class="admin-section-header">Proposal Page Settings</h3>
+                    <p class="admin-section-desc">Configure proposal content and buttons customization.</p>
+
+                    <div class="admin-form-group">
+                        <label for="proposal-question-input">Proposal Main Question Text:</label>
+                        <input type="text" id="proposal-question-input" class="admin-input">
+                    </div>
+
+                    <div class="admin-form-group">
+                        <label for="proposal-popup-input">Accepted Confetti Popup Text:</label>
+                        <textarea id="proposal-popup-input" class="admin-input" rows="3"></textarea>
+                    </div>
+
+                    <div class="admin-form-row">
+                        <div class="admin-form-group col-half">
+                            <label for="proposal-img-upload">Change Proposal Image (Couple silhouette):</label>
+                            <input type="file" id="proposal-img-upload" class="admin-input" accept="image/*">
+                        </div>
+                        <div class="admin-form-group col-half">
+                            <label for="welcome-img-upload">Change Welcome Image (Bunny):</label>
+                            <input type="file" id="welcome-img-upload" class="admin-input" accept="image/*">
+                        </div>
+                    </div>
+
+                    <div class="admin-form-row">
+                        <div class="admin-form-group col-half">
+                            <label for="congrats-img-upload">Change Congrats Image:</label>
+                            <input type="file" id="congrats-img-upload" class="admin-input" accept="image/*">
+                        </div>
+                        <div class="admin-form-group col-half">
+                            <label for="forever-img-upload">Change Forever Together Image:</label>
+                            <input type="file" id="forever-img-upload" class="admin-input" accept="image/*">
+                        </div>
+                    </div>
+
+                    <button class="btn btn-primary margin-t-md" id="save-proposal-btn">Save Proposal Details</button>
+                </section>
+
+                <!-- Tab: Email Settings -->
+                <section class="admin-tab-content" id="tab-email">
+                    <h3 class="admin-section-header">EmailJS & Alerts Configuration</h3>
+                    <p class="admin-section-desc">Setup EmailJS to receive instant updates when she clicks YES or NO.</p>
+
+                    <div class="admin-alert-box note">
+                        <strong>How to get credentials:</strong> Sign up at <a href="https://www.emailjs.com/" target="_blank">emailjs.com</a>, create an email service, a templates config, and paste keys below.
+                    </div>
+
+                    <div class="admin-form-group">
+                        <label for="email-to-notify">Your Notification Email (Receiver):</label>
+                        <input type="email" id="email-to-notify" class="admin-input" placeholder="yourname@gmail.com">
+                    </div>
+
+                    <div class="admin-form-row">
+                        <div class="admin-form-group col-half">
+                            <label for="emailjs-public-key">EmailJS Public Key:</label>
+                            <input type="text" id="emailjs-public-key" class="admin-input" placeholder="user_xxxxxxxxxxxxx">
+                        </div>
+                        <div class="admin-form-group col-half">
+                            <label for="emailjs-service-id">EmailJS Service ID:</label>
+                            <input type="text" id="emailjs-service-id" class="admin-input" placeholder="service_xxxxxxx">
+                        </div>
+                    </div>
+
+                    <div class="admin-form-group">
+                        <label for="emailjs-template-id">EmailJS Template ID:</label>
+                        <input type="text" id="emailjs-template-id" class="admin-input" placeholder="template_xxxxxxx">
+                    </div>
+
+                    <div class="admin-alert-box tip">
+                        <strong>Template variables you can use in EmailJS:</strong> <br>
+                        <code>{{subject}}</code>, <code>{{message}}</code>, <code>{{date}}</code>, <code>{{time}}</code>, <code>{{device}}</code>, <code>{{browser}}</code>, <code>{{no_clicks}}</code>, <code>{{to_email}}</code>.
+                    </div>
+
+                    <button class="btn btn-primary margin-t-md" id="save-email-btn">Save Email Settings</button>
+                </section>
+
+                <!-- Tab: Colors and Fonts -->
+                <section class="admin-tab-content" id="tab-style">
+                    <h3 class="admin-section-header">Theme, Styling & Music Config</h3>
+                    <p class="admin-section-desc">Adjust colors, audio URLs, and visual elements.</p>
+
+                    <div class="admin-form-row">
+                        <div class="admin-form-group col-third">
+                            <label for="color-primary">Primary Red/Pink Color:</label>
+                            <input type="color" id="color-primary" class="admin-input-color" value="#ff3e6c">
+                        </div>
+                        <div class="admin-form-group col-third">
+                            <label for="color-gradient-start">Background Grad Start:</label>
+                            <input type="color" id="color-gradient-start" class="admin-input-color" value="#ffe3ec">
+                        </div>
+                        <div class="admin-form-group col-third">
+                            <label for="color-gradient-end">Background Grad End:</label>
+                            <input type="color" id="color-gradient-end" class="admin-input-color" value="#ffccd5">
+                        </div>
+                    </div>
+
+                    <div class="admin-form-group">
+                        <label for="audio-track-url">Background Love Music URL (Direct MP3 Link):</label>
+                        <input type="url" id="audio-track-url" class="admin-input" placeholder="https://assets.mixkit.co/music/preview/...">
+                    </div>
+
+                    <button class="btn btn-primary margin-t-md" id="save-styles-btn">Apply Custom Styling</button>
+                </section>
+
+            </main>
+        </div>
+    </div>
+
+    <!-- Javascript -->
+    <script src="app.js"></script>
+</body>
+</html>
