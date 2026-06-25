@@ -318,29 +318,35 @@ function renderPageContent() {
 function initAudio() {
     loveAudio = new Audio();
     loveAudio.loop = true;
-    loveAudio.src = config.audio_url;
+    if (config && config.audio_url) {
+        loveAudio.src = config.audio_url;
+    }
 
     const musicBtn = document.getElementById("music-btn");
-    
-    // Enable browser interaction policy workaround
-    musicBtn.addEventListener("click", toggleMusic);
+    if (musicBtn) {
+        // Enable browser interaction policy workaround
+        musicBtn.addEventListener("click", toggleMusic);
+    }
 }
 
 function toggleMusic() {
     const musicBtn = document.getElementById("music-btn");
-    const waves = document.getElementById("music-waves");
-    const svgIcon = document.getElementById("music-icon-svg");
+    if (!loveAudio) return;
 
     if (musicPlaying) {
         loveAudio.pause();
         musicPlaying = false;
-        musicBtn.classList.add("muted");
-        musicBtn.classList.remove("playing");
+        if (musicBtn) {
+            musicBtn.classList.add("muted");
+            musicBtn.classList.remove("playing");
+        }
     } else {
         loveAudio.play().then(() => {
             musicPlaying = true;
-            musicBtn.classList.remove("muted");
-            musicBtn.classList.add("playing");
+            if (musicBtn) {
+                musicBtn.classList.remove("muted");
+                musicBtn.classList.add("playing");
+            }
         }).catch(err => {
             console.log("Audio play failed, user interaction needed first.", err);
         });
@@ -594,28 +600,36 @@ function setupAdminPanel() {
     const closeAdmin = document.getElementById("close-admin-btn");
     const resetAdmin = document.getElementById("reset-admin-btn");
 
-    // Hidden Combo 1: Double click bottom-right tiny cog trigger
-    adminTrigger.addEventListener("dblclick", () => {
-        adminModal.classList.add("active");
-    });
+    // Single-click bottom-right tiny cog trigger (now click for robust mobile/desktop access)
+    if (adminTrigger && adminModal) {
+        adminTrigger.addEventListener("click", () => {
+            adminModal.classList.add("active");
+        });
+    }
 
     // Hidden Combo 2: Click the Welcome bunny 5 times to open
-    let bunnyClickCount = 0;
-    welcomeBunny.addEventListener("click", () => {
-        if (currentPage === 1) {
-            bunnyClickCount++;
-            if (bunnyClickCount >= 5) {
-                adminModal.classList.add("active");
-                bunnyClickCount = 0; // reset
+    if (welcomeBunny && adminModal) {
+        let bunnyClickCount = 0;
+        welcomeBunny.addEventListener("click", () => {
+            if (currentPage === 1) {
+                bunnyClickCount++;
+                if (bunnyClickCount >= 5) {
+                    adminModal.classList.add("active");
+                    bunnyClickCount = 0; // reset
+                }
             }
-        }
-    });
+        });
+    }
 
-    closeAdmin.addEventListener("click", () => {
-        adminModal.classList.remove("active");
-    });
+    if (closeAdmin && adminModal) {
+        closeAdmin.addEventListener("click", () => {
+            adminModal.classList.remove("active");
+        });
+    }
 
-    resetAdmin.addEventListener("click", resetConfig);
+    if (resetAdmin) {
+        resetAdmin.addEventListener("click", resetConfig);
+    }
 
     // Tab Navigation
     const tabButtons = document.querySelectorAll(".admin-nav-item");
