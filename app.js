@@ -84,7 +84,7 @@ const DEFAULT_CONFIG = {
     color_primary: "#ff4d6d",
     color_bg_start: "#ffe5ec",
     color_bg_end: "#ffb5a7",
-    audio_url: "",
+    audio_url: "assets/apna_bana_le.mp3",
     audio_success_url: "",
 
     // Firebase Database config

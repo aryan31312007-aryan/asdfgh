@@ -57,7 +57,7 @@
   "color_primary": "#ff4d6d",
   "color_bg_start": "#ffe5ec",
   "color_bg_end": "#ffb5a7",
-  "audio_url": "",
+  "audio_url": "assets/apna_bana_le.mp3",
   "audio_success_url": "",
   "firebase_api_key": "AIzaSyAkxG071ho-dYfV8o-QwK6xCME4OPm1vX8",
   "firebase_database_url": "https://dsfrththrf-default-rtdb.asia-southeast1.firebasedatabase.app",

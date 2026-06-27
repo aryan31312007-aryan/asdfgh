@@ -20,7 +20,17 @@
     <div class="sparkles-container" id="sparkles-container"></div>
 
     <!-- Music Player Toggle -->
-    <button class="music-toggle" id="music-btn" aria-label="Toggle Music"></button>
+    <button class="music-toggle" id="music-btn" aria-label="Toggle Music">
+        <svg class="music-icon active" viewBox="0 0 24 24" id="music-icon-svg">
+            <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
+        </svg>
+        <span class="music-waves" id="music-waves">
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+        </span>
+    </button>
 
     <!-- Admin Floating Trigger (Hidden or double click in corner) -->
     <button class="admin-trigger-btn" id="admin-trigger" title="Settings (Double Click)">
