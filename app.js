@@ -84,8 +84,8 @@ const DEFAULT_CONFIG = {
     color_primary: "#ff4d6d",
     color_bg_start: "#ffe5ec",
     color_bg_end: "#ffb5a7",
-    audio_url: "assets/pehle_bhi_main.mp3",
-    audio_success_url: "https://assets.mixkit.co/music/preview/mixkit-dreaming-big-1112.mp3",
+    audio_url: "",
+    audio_success_url: "",
 
     // Firebase Database config
     firebase_api_key: "AIzaSyAkxG071ho-dYfV8o-QwK6xCME4OPm1vX8",
