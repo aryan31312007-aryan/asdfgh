@@ -84,7 +84,7 @@ const DEFAULT_CONFIG = {
     color_primary: "#ff4d6d",
     color_bg_start: "#ffe5ec",
     color_bg_end: "#ffb5a7",
-    audio_url: "https://assets.mixkit.co/music/preview/mixkit-love-grows-1111.mp3",
+    audio_url: "assets/pehle_bhi_main.mp3",
     audio_success_url: "https://assets.mixkit.co/music/preview/mixkit-dreaming-big-1112.mp3",
 
     // Firebase Database config
@@ -142,6 +142,21 @@ document.addEventListener("DOMContentLoaded", () => {
         
         // Welcome Screen load animation trigger
         document.querySelector("#page-1").classList.add("active");
+
+        // Attempt autoplay background music on open
+        if (config && config.audio_url) {
+            loveAudio.play().then(() => {
+                musicPlaying = true;
+                const mbtn = document.getElementById("music-btn");
+                if (mbtn) {
+                    mbtn.classList.add("playing");
+                    mbtn.classList.remove("muted");
+                }
+                console.log("Autoplay background music succeeded!");
+            }).catch(err => {
+                console.log("Autoplay blocked by browser. Music will play upon click interaction.");
+            });
+        }
     });
 });
 

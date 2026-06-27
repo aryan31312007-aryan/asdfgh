@@ -817,6 +817,11 @@ h1, h2, h3, h4 {
 }
 
 /* Music Control Details */
+@keyframes spin-circle {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
 .music-toggle {
     position: fixed;
     top: 20px;
@@ -839,8 +844,16 @@ h1, h2, h3, h4 {
 }
 
 .music-toggle:hover {
-    transform: scale(1.08) rotate(15deg);
     background: rgba(255,255,255,0.6);
+    box-shadow: 0 6px 20px rgba(255, 77, 109, 0.25);
+}
+
+.music-toggle:hover .music-icon {
+    transform: scale(1.1);
+}
+
+.music-toggle.playing {
+    animation: spin-circle 5s linear infinite;
 }
 
 .music-icon {
