@@ -154,9 +154,31 @@ function loadConfig() {
             return res.json();
         })
         .then(serverData => {
-            config = { ...DEFAULT_CONFIG, ...serverData };
+            const saved = localStorage.getItem("fake_to_official_agreement_cfg");
+            let localConfig = {};
+            if (saved) {
+                try {
+                    localConfig = JSON.parse(saved) || {};
+                } catch (e) {
+                    console.error("Error parsing local configuration", e);
+                }
+            }
+
+            // Merge: default, then local storage config, then server data (if not blank/empty)
+            config = { ...DEFAULT_CONFIG, ...localConfig };
+            
+            // Apply non-empty values from server config.json
+            for (const key in serverData) {
+                if (serverData[key] !== undefined && serverData[key] !== null && serverData[key] !== "") {
+                    if (Array.isArray(serverData[key]) && serverData[key].length === 0) {
+                        continue;
+                    }
+                    config[key] = serverData[key];
+                }
+            }
+
             localStorage.setItem("fake_to_official_agreement_cfg", JSON.stringify(config));
-            console.log("Loaded configuration successfully from config.json!");
+            console.log("Loaded configuration successfully!");
             initFirebaseConnection();
         })
         .catch(err => {
@@ -889,7 +911,12 @@ function setupAdminPanel() {
             gitPushBtn.disabled = true;
             
             fetch('/api/git-push', { method: 'POST' })
-                .then(res => res.json())
+                .then(res => {
+                    if (!res.ok) {
+                        throw new Error("Git sync is only supported when running locally (localhost). On public servers, use your local workspace.");
+                    }
+                    return res.json();
+                })
                 .then(data => {
                     gitPushBtn.disabled = false;
                     if (data.success) {
@@ -901,7 +928,7 @@ function setupAdminPanel() {
                 })
                 .catch(err => {
                     gitPushBtn.disabled = false;
-                    showSyncStatus("Network error pushing to GitHub.", "#ff4d6d");
+                    showSyncStatus(err.message.includes("supported") ? err.message : "Network error pushing to GitHub.", "#ff4d6d");
                     console.error("Git Push error:", err);
                 });
         });
@@ -913,7 +940,12 @@ function setupAdminPanel() {
             firebaseDeployBtn.disabled = true;
 
             fetch('/api/firebase-deploy', { method: 'POST' })
-                .then(res => res.json())
+                .then(res => {
+                    if (!res.ok) {
+                        throw new Error("Deployments are only supported when running locally (localhost). On public servers, redeploy using local terminal commands.");
+                    }
+                    return res.json();
+                })
                 .then(data => {
                     firebaseDeployBtn.disabled = false;
                     if (data.success) {
@@ -925,7 +957,7 @@ function setupAdminPanel() {
                 })
                 .catch(err => {
                     firebaseDeployBtn.disabled = false;
-                    showSyncStatus("Network error deploying to Firebase.", "#ff4d6d");
+                    showSyncStatus(err.message.includes("supported") ? err.message : "Network error deploying to Firebase.", "#ff4d6d");
                     console.error("Firebase Deploy error:", err);
                 });
         });
