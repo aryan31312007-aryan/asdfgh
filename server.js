@@ -27,8 +27,8 @@ const server = http.createServer((req, res) => {
             body += chunk.toString();
         });
 
-        if (req.url === '/api/save-config') {
-            req.on('end', () => {
+        req.on('end', () => {
+            if (req.url === '/api/save-config') {
                 try {
                     const configData = JSON.parse(body);
                     fs.writeFileSync(
@@ -43,12 +43,10 @@ const server = http.createServer((req, res) => {
                     res.writeHead(500, { 'Content-Type': 'application/json' });
                     res.end(JSON.stringify({ success: false, error: err.message }));
                 }
-            });
-            return;
-        }
+                return;
+            }
 
-        if (req.url === '/api/git-push') {
-            req.on('end', () => {
+            if (req.url === '/api/git-push') {
                 exec('git add . && git commit -m "chore: Update proposal configuration online" && git push origin main', (error, stdout, stderr) => {
                     if (error) {
                         res.writeHead(500, { 'Content-Type': 'application/json' });
@@ -58,12 +56,10 @@ const server = http.createServer((req, res) => {
                     res.writeHead(200, { 'Content-Type': 'application/json' });
                     res.end(JSON.stringify({ success: true, stdout: stdout }));
                 });
-            });
-            return;
-        }
+                return;
+            }
 
-        if (req.url === '/api/firebase-deploy') {
-            req.on('end', () => {
+            if (req.url === '/api/firebase-deploy') {
                 exec('npx firebase-tools deploy', (error, stdout, stderr) => {
                     if (error) {
                         res.writeHead(500, { 'Content-Type': 'application/json' });
@@ -73,12 +69,10 @@ const server = http.createServer((req, res) => {
                     res.writeHead(200, { 'Content-Type': 'application/json' });
                     res.end(JSON.stringify({ success: true, stdout: stdout }));
                 });
-            });
-            return;
-        }
+                return;
+            }
 
-        if (req.url === '/api/log-visit') {
-            req.on('end', () => {
+            if (req.url === '/api/log-visit') {
                 try {
                     const logData = JSON.parse(body);
                     const logsFile = path.join(__dirname, 'logs.json');
@@ -126,12 +120,10 @@ const server = http.createServer((req, res) => {
                     res.writeHead(500, { 'Content-Type': 'application/json' });
                     res.end(JSON.stringify({ success: false, error: err.message }));
                 }
-            });
-            return;
-        }
+                return;
+            }
 
-        if (req.url === '/api/clear-logs') {
-            req.on('end', () => {
+            if (req.url === '/api/clear-logs') {
                 try {
                     const logsFile = path.join(__dirname, 'logs.json');
                     fs.writeFileSync(logsFile, JSON.stringify([], null, 2), 'utf8');
@@ -141,9 +133,14 @@ const server = http.createServer((req, res) => {
                     res.writeHead(500, { 'Content-Type': 'application/json' });
                     res.end(JSON.stringify({ success: false, error: err.message }));
                 }
-            });
-            return;
-        }
+                return;
+            }
+
+            // Unknown POST route fallback
+            res.writeHead(404, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ success: false, error: 'Route not found' }));
+        });
+        return;
     }
 
     // 2. Serve Static files

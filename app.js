@@ -202,22 +202,46 @@ function loadConfig() {
 }
 
 function initFirebaseConnection() {
-    if (firebaseInitialized) return;
+    if (typeof firebase === 'undefined') {
+        console.warn("Firebase SDK scripts not loaded. Ensure you are online.");
+        return;
+    }
     if (config.firebase_api_key && config.firebase_database_url && config.firebase_project_id) {
         try {
-            firebase.initializeApp({
-                apiKey: config.firebase_api_key,
-                databaseURL: config.firebase_database_url,
-                projectId: config.firebase_project_id
-            });
-            db = firebase.database();
-            firebaseInitialized = true;
-            console.log("Firebase Database client connection initialized successfully!");
+            if (firebase.apps.length > 0) {
+                // Delete existing duplicate app to allow clean update of credentials
+                firebase.app().delete().then(() => {
+                    firebaseInitialized = false;
+                    db = null;
+                    performFirebaseInit();
+                }).catch(err => {
+                    console.error("Error tearing down duplicate Firebase app instance:", err);
+                });
+            } else {
+                performFirebaseInit();
+            }
         } catch (e) {
             console.error("Failed to initialize Firebase connection client-side:", e);
         }
     } else {
         console.log("Firebase setup inputs are blank in active config. Public server logging/links disabled.");
+    }
+}
+
+function performFirebaseInit() {
+    try {
+        firebase.initializeApp({
+            apiKey: config.firebase_api_key,
+            databaseURL: config.firebase_database_url,
+            projectId: config.firebase_project_id
+        });
+        db = firebase.database();
+        firebaseInitialized = true;
+        console.log("Firebase Database client connection initialized successfully!");
+    } catch (e) {
+        console.error("Failed to initialize Firebase app:", e);
+        firebaseInitialized = false;
+        db = null;
     }
 }
 
