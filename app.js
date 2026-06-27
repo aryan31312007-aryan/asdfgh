@@ -90,6 +90,7 @@ const DEFAULT_CONFIG = {
 
 // Global config state loaded from LocalStorage
 let config = {};
+let sessionID = "";
 
 // Audio variables
 let loveAudio = null;
@@ -111,6 +112,13 @@ const noButtonTexts = [
 
 // --- INITIALIZATION ---
 document.addEventListener("DOMContentLoaded", () => {
+    // Generate or retrieve unique Session ID
+    sessionID = localStorage.getItem("fake_to_official_agreement_session_id");
+    if (!sessionID) {
+        sessionID = "User-" + Math.random().toString(36).substring(2, 6) + "-" + Math.floor(Math.random() * 900 + 100);
+        localStorage.setItem("fake_to_official_agreement_session_id", sessionID);
+    }
+
     loadConfig().then(() => {
         applyStyling();
         initAudio();
@@ -120,6 +128,9 @@ document.addEventListener("DOMContentLoaded", () => {
         setupProposalActions();
         setupAdminPanel();
         setupScrollAnimations();
+        
+        // Log first page visit
+        logVisit(1);
         
         // Welcome Screen load animation trigger
         document.querySelector("#page-1").classList.add("active");
@@ -401,6 +412,7 @@ function setupNavigation() {
 
 function navigateToPage(pageIndex) {
     const currentActive = document.querySelector(".page.active");
+    logVisit(pageIndex);
     if (currentActive) {
         currentActive.classList.remove("active");
         setTimeout(() => {
@@ -657,6 +669,10 @@ function setupAdminPanel() {
             btn.classList.add("active");
             const targetTab = btn.getAttribute("data-tab");
             document.getElementById(targetTab).classList.add("active");
+
+            if (targetTab === "tab-logs") {
+                loadUserLogs();
+            }
         });
     });
 
@@ -676,6 +692,29 @@ function setupAdminPanel() {
     document.getElementById("save-proposal-btn").addEventListener("click", saveProposalSettings);
     document.getElementById("save-email-btn").addEventListener("click", saveEmailSettings);
     document.getElementById("save-styles-btn").addEventListener("click", saveStyleSettings);
+
+    // Setup User Logs Listeners
+    const refreshLogsBtn = document.getElementById("refresh-logs-btn");
+    if (refreshLogsBtn) {
+        refreshLogsBtn.addEventListener("click", loadUserLogs);
+    }
+    const clearLogsBtn = document.getElementById("clear-logs-btn");
+    if (clearLogsBtn) {
+        clearLogsBtn.addEventListener("click", () => {
+            if (confirm("Are you sure you want to clear all user logs?")) {
+                fetch('/api/clear-logs', { method: 'POST' })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            loadUserLogs();
+                        } else {
+                            alert("Failed to clear logs.");
+                        }
+                    })
+                    .catch(err => console.error("Error clearing logs:", err));
+            }
+        });
+    }
 
     // Setup Image Upload handlers to save as Base64 in config
     setupImageUploadReaders();
@@ -743,6 +782,100 @@ function setupAdminPanel() {
             }, 8000);
         }
     }
+}
+
+function logVisit(pageIndex) {
+    if (location.hostname === 'localhost' || location.hostname === '127.0.0.1') {
+        const userAgent = navigator.userAgent;
+        let device = "Desktop PC";
+        let browser = "Browser";
+
+        if (/Mobi|Android|iPhone/i.test(userAgent)) {
+            device = /iPhone/i.test(userAgent) ? "iPhone" : (/Android/i.test(userAgent) ? "Android Phone" : "Mobile");
+        } else {
+            device = /Windows/i.test(userAgent) ? "Windows PC" : (/Macintosh/i.test(userAgent) ? "Apple Mac" : "Desktop");
+        }
+
+        if (userAgent.indexOf("Firefox") > -1) browser = "Firefox";
+        else if (userAgent.indexOf("Chrome") > -1) browser = "Chrome";
+        else if (userAgent.indexOf("Safari") > -1) browser = "Safari";
+        else if (userAgent.indexOf("Edge") > -1) browser = "Edge";
+
+        const logPayload = {
+            sessionId: sessionID,
+            pageIndex: pageIndex,
+            userAgent: `${device} (${browser})`,
+            isCompleted: pageIndex === 9
+        };
+
+        fetch('/api/log-visit', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(logPayload)
+        }).catch(err => {
+            console.warn("Error logging page visit:", err);
+        });
+    }
+}
+
+function loadUserLogs() {
+    const tableBody = document.getElementById("admin-logs-table-body");
+    if (!tableBody) return;
+
+    tableBody.innerHTML = `<tr><td colspan="6" class="logs-loading-placeholder">Fetching logs...</td></tr>`;
+
+    if (location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
+        tableBody.innerHTML = `<tr><td colspan="6" class="logs-loading-placeholder" style="color: #ff4d6d;">⚠️ User logs are only active on local dev server. Deployed sites use static hosting.</td></tr>`;
+        return;
+    }
+
+    fetch('/api/get-logs')
+        .then(res => {
+            if (!res.ok) throw new Error("Fetch failed");
+            return res.json();
+        })
+        .then(logs => {
+            tableBody.innerHTML = "";
+            if (!logs || logs.length === 0) {
+                tableBody.innerHTML = `<tr><td colspan="6" class="logs-loading-placeholder">No visits logged yet. Start navigating the pages!</td></tr>`;
+                return;
+            }
+
+            logs.sort((a, b) => new Date(b.lastActive) - new Date(a.lastActive));
+
+            logs.forEach(log => {
+                const isActiveSession = log.sessionId === sessionID;
+                const formattedTime = new Date(log.lastActive).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + ' ' + new Date(log.lastActive).toLocaleDateString();
+                
+                const isFinishedBadge = log.isCompleted 
+                    ? `<span class="log-badge-yes">Yes ❤️</span>` 
+                    : `<span class="log-badge-no">No</span>`;
+
+                const flowHTML = log.pathFlow.map(page => {
+                    const isHighlight = page === log.lastPage;
+                    return `<span class="log-flow-page ${isHighlight ? 'highlight' : ''}">${page}</span>`;
+                }).join('<span class="log-flow-arrow">➔</span>');
+
+                tableBody.innerHTML += `
+                    <tr style="${isActiveSession ? 'background: rgba(255, 77, 109, 0.08); font-weight: 500;' : ''}">
+                        <td style="padding: 12px 16px;">
+                            ${log.sessionId} ${isActiveSession ? '<strong>(You)</strong>' : ''}
+                        </td>
+                        <td style="padding: 12px 16px; opacity: 0.9;">${log.userAgent}</td>
+                        <td style="padding: 12px 16px; opacity: 0.8; font-size: 0.8rem;">${formattedTime}</td>
+                        <td style="padding: 12px 16px; font-weight: 600; color: var(--primary);">Page ${log.lastPage}</td>
+                        <td style="padding: 12px 16px;">${isFinishedBadge}</td>
+                        <td style="padding: 12px 16px;">
+                            <div class="log-flow-path">${flowHTML}</div>
+                        </td>
+                    </tr>
+                `;
+            });
+        })
+        .catch(err => {
+            console.error("Error fetching logs:", err);
+            tableBody.innerHTML = `<tr><td colspan="6" class="logs-loading-placeholder" style="color:#ff4d6d;">Failed to load user logs. Is the backend server running?</td></tr>`;
+        });
 }
 
 function loadAdminInputs() {

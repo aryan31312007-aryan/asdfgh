@@ -1350,3 +1350,106 @@ h1, h2, h3, h4 {
         width: 100%;
     }
 }
+
+/* User Logs Tab styling */
+.admin-table-container {
+    overflow-x: auto;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 14px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    margin-top: 15px;
+    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.2);
+}
+
+.admin-logs-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+    color: #f1f1f1;
+    text-align: left;
+    min-width: 600px;
+}
+
+.admin-logs-table th, 
+.admin-logs-table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.admin-logs-table th {
+    background: rgba(255, 255, 255, 0.05);
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.5px;
+    color: var(--primary);
+}
+
+.admin-logs-table tbody tr {
+    transition: background 0.2s ease;
+}
+
+.admin-logs-table tbody tr:hover {
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.logs-loading-placeholder {
+    text-align: center;
+    padding: 30px !important;
+    color: rgba(255, 255, 255, 0.4);
+    font-style: italic;
+}
+
+/* Status Badges */
+.log-badge-yes {
+    background: rgba(6, 214, 160, 0.15);
+    color: #06d6a0;
+    border: 1px solid rgba(6, 214, 160, 0.3);
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    display: inline-block;
+    box-shadow: 0 0 8px rgba(6, 214, 160, 0.2);
+}
+
+.log-badge-no {
+    background: rgba(255, 77, 109, 0.15);
+    color: #ff4d6d;
+    border: 1px solid rgba(255, 77, 109, 0.3);
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    display: inline-block;
+}
+
+/* Flow Path arrows */
+.log-flow-path {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+.log-flow-page {
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 4px;
+    padding: 2px 6px;
+    font-size: 0.75rem;
+    font-weight: bold;
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.log-flow-page.highlight {
+    background: rgba(255, 77, 109, 0.2);
+    border-color: rgba(255, 77, 109, 0.4);
+    color: var(--primary);
+}
+
+.log-flow-arrow {
+    color: rgba(255, 255, 255, 0.3);
+    font-weight: bold;
+    font-size: 0.75rem;
+}

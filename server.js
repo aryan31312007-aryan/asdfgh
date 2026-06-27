@@ -76,10 +76,95 @@ const server = http.createServer((req, res) => {
             });
             return;
         }
+
+        if (req.url === '/api/log-visit') {
+            req.on('end', () => {
+                try {
+                    const logData = JSON.parse(body);
+                    const logsFile = path.join(__dirname, 'logs.json');
+                    let logs = [];
+                    
+                    if (fs.existsSync(logsFile)) {
+                        try {
+                            const raw = fs.readFileSync(logsFile, 'utf8');
+                            logs = raw ? JSON.parse(raw) : [];
+                        } catch (e) {
+                            console.error("Error reading logs.json, initializing empty:", e);
+                        }
+                    }
+                    
+                    const idx = logs.findIndex(l => l.sessionId === logData.sessionId);
+                    const now = new Date().toISOString();
+                    
+                    if (idx !== -1) {
+                        logs[idx].lastActive = now;
+                        logs[idx].lastPage = logData.pageIndex;
+                        logs[idx].userAgent = logData.userAgent || logs[idx].userAgent;
+                        if (logData.isCompleted) {
+                            logs[idx].isCompleted = true;
+                        }
+                        const flowLen = logs[idx].pathFlow.length;
+                        if (flowLen === 0 || logs[idx].pathFlow[flowLen - 1] !== logData.pageIndex) {
+                            logs[idx].pathFlow.push(logData.pageIndex);
+                        }
+                    } else {
+                        logs.push({
+                            sessionId: logData.sessionId,
+                            userAgent: logData.userAgent || 'Unknown Device',
+                            lastActive: now,
+                            lastPage: logData.pageIndex,
+                            isCompleted: !!logData.isCompleted,
+                            pathFlow: [logData.pageIndex]
+                        });
+                    }
+                    
+                    fs.writeFileSync(logsFile, JSON.stringify(logs, null, 2), 'utf8');
+                    
+                    res.writeHead(200, { 'Content-Type': 'application/json' });
+                    res.end(JSON.stringify({ success: true }));
+                } catch (err) {
+                    res.writeHead(500, { 'Content-Type': 'application/json' });
+                    res.end(JSON.stringify({ success: false, error: err.message }));
+                }
+            });
+            return;
+        }
+
+        if (req.url === '/api/clear-logs') {
+            req.on('end', () => {
+                try {
+                    const logsFile = path.join(__dirname, 'logs.json');
+                    fs.writeFileSync(logsFile, JSON.stringify([], null, 2), 'utf8');
+                    res.writeHead(200, { 'Content-Type': 'application/json' });
+                    res.end(JSON.stringify({ success: true }));
+                } catch (err) {
+                    res.writeHead(500, { 'Content-Type': 'application/json' });
+                    res.end(JSON.stringify({ success: false, error: err.message }));
+                }
+            });
+            return;
+        }
     }
 
     // 2. Serve Static files
     if (req.method === 'GET') {
+        if (req.url === '/api/get-logs') {
+            try {
+                const logsFile = path.join(__dirname, 'logs.json');
+                let logs = [];
+                if (fs.existsSync(logsFile)) {
+                    const raw = fs.readFileSync(logsFile, 'utf8');
+                    logs = raw ? JSON.parse(raw) : [];
+                }
+                res.writeHead(200, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify(logs));
+            } catch (err) {
+                res.writeHead(500, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ success: false, error: err.message }));
+            }
+            return;
+        }
+
         let filePath = '.' + req.url;
         if (filePath === './') {
             filePath = './index.html';
