@@ -88,9 +88,9 @@ const DEFAULT_CONFIG = {
     audio_success_url: "https://assets.mixkit.co/music/preview/mixkit-dreaming-big-1112.mp3",
 
     // Firebase Database config
-    firebase_api_key: "",
-    firebase_database_url: "",
-    firebase_project_id: ""
+    firebase_api_key: "AIzaSyAkxG071ho-dYfV8o-QwK6xCME4OPm1vX8",
+    firebase_database_url: "https://dsfrththrf-default-rtdb.asia-southeast1.firebasedatabase.app",
+    firebase_project_id: "dsfrththrf"
 };
 
 // Global config state loaded from LocalStorage
