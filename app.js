@@ -85,12 +85,20 @@ const DEFAULT_CONFIG = {
     color_bg_start: "#ffe5ec",
     color_bg_end: "#ffb5a7",
     audio_url: "https://assets.mixkit.co/music/preview/mixkit-love-grows-1111.mp3",
-    audio_success_url: "https://assets.mixkit.co/music/preview/mixkit-dreaming-big-1112.mp3"
+    audio_success_url: "https://assets.mixkit.co/music/preview/mixkit-dreaming-big-1112.mp3",
+
+    // Firebase Database config
+    firebase_api_key: "",
+    firebase_database_url: "",
+    firebase_project_id: ""
 };
 
 // Global config state loaded from LocalStorage
 let config = {};
 let sessionID = "";
+let activeUser = ""; // Recipient username if query parameter ?u=xxx exists
+let firebaseInitialized = false;
+let db = null;
 
 // Audio variables
 let loveAudio = null;
@@ -149,6 +157,7 @@ function loadConfig() {
             config = { ...DEFAULT_CONFIG, ...serverData };
             localStorage.setItem("fake_to_official_agreement_cfg", JSON.stringify(config));
             console.log("Loaded configuration successfully from config.json!");
+            initFirebaseConnection();
         })
         .catch(err => {
             console.warn("Could not load config.json (expected in static hosting). Reading local storage:", err);
@@ -164,7 +173,52 @@ function loadConfig() {
             } else {
                 config = { ...DEFAULT_CONFIG };
             }
+            initFirebaseConnection();
+        })
+        .then(() => {
+            // Check for ?u=username URL query parameter to load customized public config
+            const urlParams = new URLSearchParams(window.location.search);
+            const usernameParam = urlParams.get('u');
+            
+            if (usernameParam && firebaseInitialized && db) {
+                activeUser = usernameParam.trim().toLowerCase();
+                console.log(`Query parameter 'u' detected. Fetching config for user: ${activeUser}`);
+                
+                return db.ref('configs/' + activeUser).once('value')
+                    .then(snapshot => {
+                        const dbConfig = snapshot.val();
+                        if (dbConfig) {
+                            config = { ...config, ...dbConfig };
+                            console.log(`Loaded customized configuration for '${activeUser}' from Firebase!`);
+                        } else {
+                            console.warn(`User config for '${activeUser}' not found in Firebase. Using default configuration.`);
+                        }
+                    })
+                    .catch(error => {
+                        console.error("Error fetching user config from Firebase:", error);
+                    });
+            }
         });
+}
+
+function initFirebaseConnection() {
+    if (firebaseInitialized) return;
+    if (config.firebase_api_key && config.firebase_database_url && config.firebase_project_id) {
+        try {
+            firebase.initializeApp({
+                apiKey: config.firebase_api_key,
+                databaseURL: config.firebase_database_url,
+                projectId: config.firebase_project_id
+            });
+            db = firebase.database();
+            firebaseInitialized = true;
+            console.log("Firebase Database client connection initialized successfully!");
+        } catch (e) {
+            console.error("Failed to initialize Firebase connection client-side:", e);
+        }
+    } else {
+        console.log("Firebase setup inputs are blank in active config. Public server logging/links disabled.");
+    }
 }
 
 function saveConfig() {
@@ -671,6 +725,7 @@ function setupAdminPanel() {
             document.getElementById(targetTab).classList.add("active");
 
             if (targetTab === "tab-logs") {
+                loadLogsUserDropdown();
                 loadUserLogs();
             }
         });
@@ -698,21 +753,101 @@ function setupAdminPanel() {
     if (refreshLogsBtn) {
         refreshLogsBtn.addEventListener("click", loadUserLogs);
     }
+    const logUserSelect = document.getElementById("admin-select-log-user");
+    if (logUserSelect) {
+        logUserSelect.addEventListener("change", loadUserLogs);
+    }
     const clearLogsBtn = document.getElementById("clear-logs-btn");
     if (clearLogsBtn) {
         clearLogsBtn.addEventListener("click", () => {
-            if (confirm("Are you sure you want to clear all user logs?")) {
-                fetch('/api/clear-logs', { method: 'POST' })
-                    .then(res => res.json())
-                    .then(data => {
-                        if (data.success) {
-                            loadUserLogs();
-                        } else {
-                            alert("Failed to clear logs.");
-                        }
-                    })
-                    .catch(err => console.error("Error clearing logs:", err));
+            const selectedUser = logUserSelect ? logUserSelect.value : "__local__";
+            if (confirm(`Are you sure you want to clear all logs for ${selectedUser === '__local__' ? 'local server' : selectedUser}?`)) {
+                if (selectedUser === "__local__") {
+                    fetch('/api/clear-logs', { method: 'POST' })
+                        .then(res => res.json())
+                        .then(data => {
+                            if (data.success) {
+                                loadUserLogs();
+                            } else {
+                                alert("Failed to clear local logs.");
+                            }
+                        })
+                        .catch(err => console.error("Error clearing logs:", err));
+                } else {
+                    if (firebaseInitialized && db) {
+                        db.ref('logs/' + selectedUser).remove()
+                            .then(() => {
+                                loadUserLogs();
+                                alert(`Logs for '${selectedUser}' cleared from Firebase.`);
+                            })
+                            .catch(err => alert("Failed to clear Firebase logs: " + err.message));
+                    }
+                }
             }
+        });
+    }
+
+    // Setup Create User Link listeners
+    const generateLinkBtn = document.getElementById("generate-custom-link-btn");
+    if (generateLinkBtn) {
+        generateLinkBtn.addEventListener("click", () => {
+            const usernameInput = document.getElementById("create-link-username");
+            const username = usernameInput.value.trim().toLowerCase();
+            
+            if (!username) {
+                alert("Please enter a username or ID first.");
+                return;
+            }
+
+            if (!firebaseInitialized || !db) {
+                alert("Firebase database is not initialized. Please configure it in Connection Settings and save first.");
+                return;
+            }
+
+            generateLinkBtn.disabled = true;
+            generateLinkBtn.innerText = "Saving to Firebase... Please wait.";
+
+            db.ref('configs/' + username).set(config)
+                .then(() => {
+                    const generatedLink = window.location.origin + window.location.pathname + "?u=" + username;
+                    document.getElementById("generated-url-output").value = generatedLink;
+                    document.getElementById("generated-link-box").style.display = "block";
+                    usernameInput.value = ""; // clear input
+                    
+                    generateLinkBtn.disabled = false;
+                    generateLinkBtn.innerText = "🔗 Save Customizations & Generate Link";
+                    alert(`Custom configuration saved for '${username}' successfully!`);
+                    
+                    loadLogsUserDropdown();
+                })
+                .catch(err => {
+                    generateLinkBtn.disabled = false;
+                    generateLinkBtn.innerText = "🔗 Save Customizations & Generate Link";
+                    console.error("Firebase write error:", err);
+                    alert("Error saving customization link: " + err.message);
+                });
+        });
+    }
+
+    const copyUrlBtn = document.getElementById("copy-url-btn");
+    if (copyUrlBtn) {
+        copyUrlBtn.addEventListener("click", () => {
+            const urlOutput = document.getElementById("generated-url-output");
+            urlOutput.select();
+            urlOutput.setSelectionRange(0, 99999);
+            
+            navigator.clipboard.writeText(urlOutput.value)
+                .then(() => {
+                    const originalText = copyUrlBtn.innerText;
+                    copyUrlBtn.innerText = "Copied!";
+                    setTimeout(() => {
+                        copyUrlBtn.innerText = originalText;
+                    }, 2000);
+                })
+                .catch(err => {
+                    console.error("Clipboard copy failed:", err);
+                    alert("Failed to copy link. Please copy it manually.");
+                });
         });
     }
 
@@ -785,29 +920,59 @@ function setupAdminPanel() {
 }
 
 function logVisit(pageIndex) {
+    const userAgent = navigator.userAgent;
+    let device = "Desktop PC";
+    let browser = "Browser";
+
+    if (/Mobi|Android|iPhone/i.test(userAgent)) {
+        device = /iPhone/i.test(userAgent) ? "iPhone" : (/Android/i.test(userAgent) ? "Android Phone" : "Mobile");
+    } else {
+        device = /Windows/i.test(userAgent) ? "Windows PC" : (/Macintosh/i.test(userAgent) ? "Apple Mac" : "Desktop");
+    }
+
+    if (userAgent.indexOf("Firefox") > -1) browser = "Firefox";
+    else if (userAgent.indexOf("Chrome") > -1) browser = "Chrome";
+    else if (userAgent.indexOf("Safari") > -1) browser = "Safari";
+    else if (userAgent.indexOf("Edge") > -1) browser = "Edge";
+
+    const logPayload = {
+        sessionId: sessionID,
+        pageIndex: pageIndex,
+        userAgent: `${device} (${browser})`,
+        isCompleted: pageIndex === 9,
+        lastActive: new Date().toISOString()
+    };
+
+    if (activeUser && firebaseInitialized && db) {
+        const userLogRef = db.ref(`logs/${activeUser}/${sessionID}`);
+        userLogRef.once('value').then(snapshot => {
+            const data = snapshot.val();
+            let pathFlow = [pageIndex];
+            
+            if (data && data.pathFlow) {
+                pathFlow = data.pathFlow;
+                if (pathFlow.length === 0 || pathFlow[pathFlow.length - 1] !== pageIndex) {
+                    pathFlow.push(pageIndex);
+                }
+            }
+            
+            userLogRef.set({
+                sessionId: sessionID,
+                userAgent: logPayload.userAgent,
+                lastActive: logPayload.lastActive,
+                lastPage: pageIndex,
+                isCompleted: logPayload.isCompleted || (data ? !!data.isCompleted : false),
+                pathFlow: pathFlow
+            }).then(() => {
+                console.log(`Logged visit to Firebase under logs/${activeUser}/${sessionID}`);
+            }).catch(e => {
+                console.error("Firebase log visit write failed:", e);
+            });
+        });
+        return;
+    }
+
     if (location.hostname === 'localhost' || location.hostname === '127.0.0.1') {
-        const userAgent = navigator.userAgent;
-        let device = "Desktop PC";
-        let browser = "Browser";
-
-        if (/Mobi|Android|iPhone/i.test(userAgent)) {
-            device = /iPhone/i.test(userAgent) ? "iPhone" : (/Android/i.test(userAgent) ? "Android Phone" : "Mobile");
-        } else {
-            device = /Windows/i.test(userAgent) ? "Windows PC" : (/Macintosh/i.test(userAgent) ? "Apple Mac" : "Desktop");
-        }
-
-        if (userAgent.indexOf("Firefox") > -1) browser = "Firefox";
-        else if (userAgent.indexOf("Chrome") > -1) browser = "Chrome";
-        else if (userAgent.indexOf("Safari") > -1) browser = "Safari";
-        else if (userAgent.indexOf("Edge") > -1) browser = "Edge";
-
-        const logPayload = {
-            sessionId: sessionID,
-            pageIndex: pageIndex,
-            userAgent: `${device} (${browser})`,
-            isCompleted: pageIndex === 9
-        };
-
         fetch('/api/log-visit', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -822,60 +987,116 @@ function loadUserLogs() {
     const tableBody = document.getElementById("admin-logs-table-body");
     if (!tableBody) return;
 
+    const logUserSelect = document.getElementById("admin-select-log-user");
+    const selectedUser = logUserSelect ? logUserSelect.value : "__local__";
+
     tableBody.innerHTML = `<tr><td colspan="6" class="logs-loading-placeholder">Fetching logs...</td></tr>`;
 
-    if (location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
-        tableBody.innerHTML = `<tr><td colspan="6" class="logs-loading-placeholder" style="color: #ff4d6d;">⚠️ User logs are only active on local dev server. Deployed sites use static hosting.</td></tr>`;
+    if (selectedUser === "__local__") {
+        if (location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
+            tableBody.innerHTML = `<tr><td colspan="6" class="logs-loading-placeholder" style="color: #ff4d6d;">⚠️ User logs are only active on local dev server. Deployed sites use static hosting.</td></tr>`;
+            return;
+        }
+
+        fetch('/api/get-logs')
+            .then(res => {
+                if (!res.ok) throw new Error("Fetch failed");
+                return res.json();
+            })
+            .then(logs => {
+                renderLogsTable(logs);
+            })
+            .catch(err => {
+                console.error("Error fetching local logs:", err);
+                tableBody.innerHTML = `<tr><td colspan="6" class="logs-loading-placeholder" style="color:#ff4d6d;">Failed to load user logs. Is the backend server running?</td></tr>`;
+            });
         return;
     }
 
-    fetch('/api/get-logs')
-        .then(res => {
-            if (!res.ok) throw new Error("Fetch failed");
-            return res.json();
-        })
-        .then(logs => {
-            tableBody.innerHTML = "";
-            if (!logs || logs.length === 0) {
-                tableBody.innerHTML = `<tr><td colspan="6" class="logs-loading-placeholder">No visits logged yet. Start navigating the pages!</td></tr>`;
-                return;
+    if (!firebaseInitialized || !db) {
+        tableBody.innerHTML = `<tr><td colspan="6" class="logs-loading-placeholder" style="color:#ff4d6d;">Firebase is not initialized. Setup credentials in Connection settings.</td></tr>`;
+        return;
+    }
+
+    db.ref('logs/' + selectedUser).once('value')
+        .then(snapshot => {
+            const logsData = snapshot.val();
+            const logsArray = [];
+            if (logsData) {
+                Object.keys(logsData).forEach(sid => {
+                    logsArray.push(logsData[sid]);
+                });
             }
-
-            logs.sort((a, b) => new Date(b.lastActive) - new Date(a.lastActive));
-
-            logs.forEach(log => {
-                const isActiveSession = log.sessionId === sessionID;
-                const formattedTime = new Date(log.lastActive).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + ' ' + new Date(log.lastActive).toLocaleDateString();
-                
-                const isFinishedBadge = log.isCompleted 
-                    ? `<span class="log-badge-yes">Yes ❤️</span>` 
-                    : `<span class="log-badge-no">No</span>`;
-
-                const flowHTML = log.pathFlow.map(page => {
-                    const isHighlight = page === log.lastPage;
-                    return `<span class="log-flow-page ${isHighlight ? 'highlight' : ''}">${page}</span>`;
-                }).join('<span class="log-flow-arrow">➔</span>');
-
-                tableBody.innerHTML += `
-                    <tr style="${isActiveSession ? 'background: rgba(255, 77, 109, 0.08); font-weight: 500;' : ''}">
-                        <td style="padding: 12px 16px;">
-                            ${log.sessionId} ${isActiveSession ? '<strong>(You)</strong>' : ''}
-                        </td>
-                        <td style="padding: 12px 16px; opacity: 0.9;">${log.userAgent}</td>
-                        <td style="padding: 12px 16px; opacity: 0.8; font-size: 0.8rem;">${formattedTime}</td>
-                        <td style="padding: 12px 16px; font-weight: 600; color: var(--primary);">Page ${log.lastPage}</td>
-                        <td style="padding: 12px 16px;">${isFinishedBadge}</td>
-                        <td style="padding: 12px 16px;">
-                            <div class="log-flow-path">${flowHTML}</div>
-                        </td>
-                    </tr>
-                `;
-            });
+            renderLogsTable(logsArray);
         })
         .catch(err => {
-            console.error("Error fetching logs:", err);
-            tableBody.innerHTML = `<tr><td colspan="6" class="logs-loading-placeholder" style="color:#ff4d6d;">Failed to load user logs. Is the backend server running?</td></tr>`;
+            console.error("Error fetching Firebase logs:", err);
+            tableBody.innerHTML = `<tr><td colspan="6" class="logs-loading-placeholder" style="color:#ff4d6d;">Failed to fetch logs from Firebase database.</td></tr>`;
         });
+}
+
+function renderLogsTable(logs) {
+    const tableBody = document.getElementById("admin-logs-table-body");
+    if (!tableBody) return;
+    
+    tableBody.innerHTML = "";
+    if (!logs || logs.length === 0) {
+        tableBody.innerHTML = `<tr><td colspan="6" class="logs-loading-placeholder">No visits logged yet. Start navigating the pages!</td></tr>`;
+        return;
+    }
+
+    logs.sort((a, b) => new Date(b.lastActive) - new Date(a.lastActive));
+
+    logs.forEach(log => {
+        const isActiveSession = log.sessionId === sessionID;
+        const formattedTime = new Date(log.lastActive).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + ' ' + new Date(log.lastActive).toLocaleDateString();
+        
+        const isFinishedBadge = log.isCompleted 
+            ? `<span class="log-badge-yes">Yes ❤️</span>` 
+            : `<span class="log-badge-no">No</span>`;
+
+        const flowHTML = log.pathFlow ? log.pathFlow.map(page => {
+            const isHighlight = page === log.lastPage;
+            return `<span class="log-flow-page ${isHighlight ? 'highlight' : ''}">${page}</span>`;
+        }).join('<span class="log-flow-arrow">➔</span>') : `Page ${log.lastPage}`;
+
+        tableBody.innerHTML += `
+            <tr style="${isActiveSession ? 'background: rgba(255, 77, 109, 0.08); font-weight: 500;' : ''}">
+                <td style="padding: 12px 16px;">
+                    ${log.sessionId} ${isActiveSession ? '<strong>(You)</strong>' : ''}
+                </td>
+                <td style="padding: 12px 16px; opacity: 0.9;">${log.userAgent || 'Unknown Device'}</td>
+                <td style="padding: 12px 16px; opacity: 0.8; font-size: 0.8rem;">${formattedTime}</td>
+                <td style="padding: 12px 16px; font-weight: 600; color: var(--primary);">Page ${log.lastPage}</td>
+                <td style="padding: 12px 16px;">${isFinishedBadge}</td>
+                <td style="padding: 12px 16px;">
+                    <div class="log-flow-path">${flowHTML}</div>
+                </td>
+            </tr>
+        `;
+    });
+}
+
+function loadLogsUserDropdown() {
+    const select = document.getElementById("admin-select-log-user");
+    if (!select) return;
+
+    select.innerHTML = `<option value="__local__">Local Server logs (Default)</option>`;
+
+    if (firebaseInitialized && db) {
+        db.ref('logs').once('value')
+            .then(snapshot => {
+                const logsRoot = snapshot.val();
+                if (logsRoot) {
+                    Object.keys(logsRoot).forEach(username => {
+                        select.innerHTML += `<option value="${username}">${username} logs (Firebase)</option>`;
+                    });
+                }
+            })
+            .catch(err => {
+                console.error("Error loading logged users list:", err);
+            });
+    }
 }
 
 function loadAdminInputs() {
@@ -888,6 +1109,11 @@ function loadAdminInputs() {
     document.getElementById("emailjs-public-key").value = config.emailjs_public_key;
     document.getElementById("emailjs-service-id").value = config.emailjs_service_id;
     document.getElementById("emailjs-template-id").value = config.emailjs_template_id;
+
+    // Connection settings inputs for Firebase
+    document.getElementById("firebase-api-key").value = config.firebase_api_key || "";
+    document.getElementById("firebase-db-url").value = config.firebase_database_url || "";
+    document.getElementById("firebase-project-id").value = config.firebase_project_id || "";
 
     // styles tab values
     document.getElementById("color-primary").value = config.color_primary;
@@ -1311,8 +1537,15 @@ function saveEmailSettings() {
     config.emailjs_public_key = document.getElementById("emailjs-public-key").value.trim();
     config.emailjs_service_id = document.getElementById("emailjs-service-id").value.trim();
     config.emailjs_template_id = document.getElementById("emailjs-template-id").value.trim();
+    
+    // Save Firebase Database credentials too
+    config.firebase_api_key = document.getElementById("firebase-api-key").value.trim();
+    config.firebase_database_url = document.getElementById("firebase-db-url").value.trim();
+    config.firebase_project_id = document.getElementById("firebase-project-id").value.trim();
+    
     saveConfig();
-    alert("Email Notification settings saved!");
+    initFirebaseConnection();
+    alert("Connection & Database settings saved!");
 }
 
 // 8. THEME & COLORS

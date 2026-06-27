@@ -285,6 +285,7 @@
                     <button class="admin-nav-item" data-tab="tab-proposal">💍 Proposal settings</button>
                     <button class="admin-nav-item" data-tab="tab-email">✉️ Email Settings</button>
                     <button class="admin-nav-item" data-tab="tab-style">🎨 Theme & Colors</button>
+                    <button class="admin-nav-item" data-tab="tab-create-link">🔗 Create User Link</button>
                     <button class="admin-nav-item" data-tab="tab-logs">📊 User Logs</button>
                 </nav>
                 <div class="admin-sidebar-footer">
@@ -498,7 +499,7 @@
                     <button class="btn btn-primary margin-t-md" id="save-proposal-btn">Save Proposal Details</button>
                 </section>
 
-                <!-- Tab: Email Settings -->
+                <!-- Tab: Connection Settings -->
                 <section class="admin-tab-content" id="tab-email">
                     <h3 class="admin-section-header">EmailJS & Alerts Configuration</h3>
                     <p class="admin-section-desc">Setup EmailJS to receive instant updates when she clicks YES or NO.</p>
@@ -533,7 +534,32 @@
                         <code>{{subject}}</code>, <code>{{message}}</code>, <code>{{date}}</code>, <code>{{time}}</code>, <code>{{device}}</code>, <code>{{browser}}</code>, <code>{{no_clicks}}</code>, <code>{{to_email}}</code>.
                     </div>
 
-                    <button class="btn btn-primary margin-t-md" id="save-email-btn">Save Email Settings</button>
+                    <hr class="admin-divider" style="margin: 20px 0; border: 0; border-top: 1px solid rgba(255,255,255,0.08);">
+                    
+                    <h3 class="admin-section-header">Firebase Realtime Database Setup</h3>
+                    <p class="admin-section-desc">Connect a public database to enable multi-user link customization and online user activity logging.</p>
+
+                    <div class="admin-alert-box tip">
+                        <strong>Public Database</strong>: Ensure your Firebase database rules allow public read/write (e.g., <code>".read": true, ".write": true</code>).
+                    </div>
+
+                    <div class="admin-form-row">
+                        <div class="admin-form-group col-half">
+                            <label for="firebase-api-key">Firebase API Key:</label>
+                            <input type="text" id="firebase-api-key" class="admin-input" placeholder="AIzaSy...">
+                        </div>
+                        <div class="admin-form-group col-half">
+                            <label for="firebase-project-id">Firebase Project ID:</label>
+                            <input type="text" id="firebase-project-id" class="admin-input" placeholder="dsfrththrf">
+                        </div>
+                    </div>
+
+                    <div class="admin-form-group">
+                        <label for="firebase-db-url">Firebase Database URL:</label>
+                        <input type="text" id="firebase-db-url" class="admin-input" placeholder="https://dsfrththrf-default-rtdb.firebaseio.com">
+                    </div>
+
+                    <button class="btn btn-primary margin-t-md" id="save-email-btn">Save Connection Settings</button>
                 </section>
 
                 <!-- Tab: Colors and Fonts -->
@@ -569,13 +595,46 @@
                     <button class="btn btn-primary margin-t-md" id="save-styles-btn">Apply Custom Styling</button>
                 </section>
 
+                <!-- Tab: Create User Link -->
+                <section class="admin-tab-content" id="tab-create-link">
+                    <h3 class="admin-section-header">Create Custom Proposal Link</h3>
+                    <p class="admin-section-desc">Generate a personalized copy of this site for a specific user.</p>
+
+                    <div class="admin-alert-box note">
+                        <strong>How this works:</strong> Enter a username (e.g. <code>sneha</code>). When you click "Generate Link", the site will save your current customized settings (texts, timeline items, memory photos, background song) to Firebase under that name. A unique URL will be generated for them.
+                    </div>
+
+                    <div class="admin-form-group">
+                        <label for="create-link-username">Recipient Username / ID (letters/numbers only):</label>
+                        <input type="text" id="create-link-username" class="admin-input" placeholder="e.g. sneha" pattern="[a-zA-Z0-9]+" oninput="this.value = this.value.replace(/[^a-zA-Z0-9]/g, '')">
+                    </div>
+
+                    <button class="btn btn-primary" id="generate-custom-link-btn" style="margin-top:10px;">🔗 Save Customizations & Generate Link</button>
+
+                    <div id="generated-link-box" class="admin-glass-subcard" style="display:none; margin-top:20px; padding:15px; border-radius:12px; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08);">
+                        <p style="font-weight:600; color:var(--primary); margin-bottom:8px; font-size:0.9rem;">Your Personalized Link is Ready! 🎉</p>
+                        <div style="display:flex; gap:8px;">
+                            <input type="text" id="generated-url-output" class="admin-input" readonly style="flex:1; background:rgba(0,0,0,0.2); color:#fff; font-size:0.8rem;">
+                            <button class="btn btn-gold btn-sm" id="copy-url-btn" style="padding:0 15px;">Copy</button>
+                        </div>
+                        <p style="font-size:0.75rem; color:rgba(255,255,255,0.5); margin-top:8px;">Share this link with them. Any pages they visit will be logged specifically under their username.</p>
+                    </div>
+                </section>
+
                 <!-- Tab: User Logs -->
                 <section class="admin-tab-content" id="tab-logs">
                     <h3 class="admin-section-header">User Activity Logs</h3>
                     <p class="admin-section-desc">Track which pages are visited, session progress, and how far they got.</p>
                     
                     <div class="admin-alert-box note">
-                        <strong>Live Tracker</strong>: Shows active user session details. Refresh to see page updates instantly.
+                        <strong>Public & Local Tracker</strong>: Select a custom username below to view their tracking logs.
+                    </div>
+
+                    <div class="admin-form-group" style="margin-bottom:15px;">
+                        <label for="admin-select-log-user">Select Recipient / Username:</label>
+                        <select id="admin-select-log-user" class="admin-input">
+                            <option value="__local__">Local Server logs (Default)</option>
+                        </select>
                     </div>
 
                     <div class="admin-logs-actions" style="margin-bottom:15px; display:flex; justify-content:space-between; align-items:center; gap: 10px;">
@@ -608,6 +667,9 @@
         </div>
     </div>
 
+    <!-- Firebase SDK Compat (V8) -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <!-- Javascript -->
     <script src="app.js"></script>
 </body>
