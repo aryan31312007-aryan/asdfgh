@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "@distube/ytdl-core": "^4.16.12",
+    "yt-stream": "^1.7.4"
+  }
+}
